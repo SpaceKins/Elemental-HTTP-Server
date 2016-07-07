@@ -40,9 +40,11 @@ var server = http.createServer(function(request, response) {
 server.listen(serverPort, serverIP);
 console.log("Server is listening on port " + serverPort + '@' + serverIP);
 
+/*
 server.on('connect', function(req, cltSocket, head) {
     console.log('head');
 });
+*/
 
 server.on('request', function(req, res) {
     console.log(req.headers);
@@ -66,10 +68,10 @@ server.on('request', function(req, res) {
     if (req.method == "POST") {
         req.setEncoding('utf-8');
         req.on('data', function(data) {
-            console.log(data);
+          //  console.log(data);
             var postData = querystring.parse(data);
             console.log(postData);
-
+            writeDataToFile(postData);
             writeElementData(res, postData);
         })
     }
@@ -117,6 +119,41 @@ function writeDataFromFile(fileName, thisResponse) {
 
         thisResponse.end();
     });
+}
+
+function writeDataToFile(dataArray) {
+    var fileName = "./" + dataArray['elementName'].toLowerCase() + ".html";
+
+    console.log('writing to ' + fileName);
+
+    fs.open(fileName, 'w', function() {
+        fs.exists(fileName, function() {
+            fs.writeFile(fileName, createElementData(dataArray));
+        })
+
+    });
+
+
+}
+
+function createElementData(dataArray) {
+    var data = '<!DOCTYPE html>';
+    data += '\n' + '<html lang="en">';
+    data += '\n' + '<head>';
+    data += '\n' + '<meta charset="UTF-8">';
+    data += '\n' + '<title>The Elements - Boron</title>';
+    data += '\n' + '<link rel="stylesheet" href="/css/styles.css">';
+    data += '\n' + '</head>';
+    data += '\n' + '<body>';
+    data += '\n' + '<h1>' + dataArray['elementName'] + '</h1>';
+    data += '\n' + '<h2>' + dataArray['elementSymbol'] + '</h2>';
+    data += '\n' + '<h3>Atomic number ' + dataArray['elementAtomicNumber'] + '</h3>';
+    data += '\n' + '<p>' + dataArray['elementDescription'] + '</p>';
+    data += '\n' + '<p><a href="/">back</a></p>';
+    data += '\n' + '</body>';
+    data += '\n' + '</html>';
+
+    return data;
 }
 
 function writeElementData(thisResponse, dataArray) {
