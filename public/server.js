@@ -42,19 +42,6 @@ var count = 0;
 
 var server = http.createServer(function(request, response) {
 
-    /*
- response.writeHead(200, {"Content-Type": "text/html"});
-  response.write("<!DOCTYPE 'html'>");
-  response.write("<html>");
-  response.write("<head>");
-  response.write("<title>Hello World Page</title>");
-  response.write("</head>");
-  response.write("<body>");
-  response.write("Hello Worldr! " + count++);
-  response.write("</body>");
-  response.write("</html>");
-  response.end();
-*/
 
     console.log('request=');
     //  console.log(request);
@@ -90,10 +77,11 @@ server.on('request', function(req, res) {
             console.log(postData);
             var postFile = './' + postData['elementName'] + '.html';
 
-            fs.stat(postFile, function(err, stats){
+            fs.stat(postFile, function(err, stats) {
                 console.log('****In Call Back*******************************');
                 //console.log(res);
-                fileExistPost(err, stats,res,postData);});
+                fileExistPost(err, stats, res, postData);
+            });
         })
     }
 
@@ -115,26 +103,68 @@ server.on('request', function(req, res) {
                 if (err) {
                     console.log('errr');
 
-                    /*
-                    res.writeHead(404, {
-                        "Content-Type": "text/html"
-                    });
-                    */
-
-                    //  console.log(data);
-                    //res.write(url + ' not found.');
                     writeDataFromFile('./404.html', res);
-                    //  res.end();
-                    //throw err;
+
                 } else {
                     writeDataFromFile('.' + url + '.html', res);
                 }
-
-
             })
         }
+    }
 
-        /**** SKip for later
+
+    if (req.method == "PUT") {
+        req.setEncoding('utf-8');
+        req.on('data', function(data) {
+            //  console.log(data);
+            var putData = querystring.parse(data);
+            console.log(putData);
+            var putFile = './' + putData['elementName'] + '.html';
+
+            fs.stat(putFile, function(err, stats) {
+                console.log('****In Call Back*******************************');
+                //console.log(res);
+                fileExistPut(err, stats, res, putData);
+            });
+        })
+    }
+
+    if (req.method == "DELETE") {
+        req.setEncoding('utf-8');
+
+        console.log('In Delete');
+        if (url.search(/^\/[a-z]/i) == 0) {
+            var deleteFile = '.' + url + '.html';
+
+            fs.stat(deleteFile, function(err, stats) {
+                console.log('****In Call Back*******************************');
+                //console.log(res);
+                fileExistDelete(err, stats, res, url);
+            });
+        }
+
+    }
+
+    /*
+    if (req.method == "DELETE") {
+        req.setEncoding('utf-8');
+        req.on('data', function(data) {
+            //  console.log(data);
+            var deleteData = querystring.parse(data);
+            console.log(putData);
+            var deleteFile = './' + deleteData['elementName'] + '.html';
+
+            fs.stat(putFile, function(err, stats) {
+                console.log('****In Call Back*******************************');
+                //console.log(res);
+                fileExistDelete(err, stats, res, deleteData);
+            });
+        })
+    }
+*/
+
+
+    /**** SKip for later
         for (var i = 0; i < keys.length; i++) {
             console.log('Regex=' + url.search(keys[i]));
             if (url.search(keys[i]) == 0) {
@@ -156,7 +186,7 @@ server.on('request', function(req, res) {
 
         */
 
-        /*
+    /*
         if (url in routes) {
             console.log('Found URL as ' + url);
             routes[url](res);
@@ -169,17 +199,16 @@ server.on('request', function(req, res) {
             console.log(data);
         })
         */
-    }
 
 
 });
 
-function fileExistPost(err, stats,res,postData) {
-                console.log('@@@@@@@@@@@@@@@In Call Back*******************************');
+function fileExistPost(err, stats, res, postData) {
+    console.log('@@@@@@@@@@@@@@@In Call Back*******************************');
 
     if (err) {
-            console.log(err);
-        }
+        console.log(err);
+    }
 
     if (stats == undefined) {
         console.log('*****Not Exist');
@@ -203,6 +232,79 @@ function fileExistPost(err, stats,res,postData) {
         //res.write(data);
 
         res.end();
+    }
+
+}
+
+
+function fileExistPut(err, stats, res, putData) {
+    console.log('@@@@@@@@@@@@@@@In Call Back*******************************');
+
+    if (err) {
+        console.log(err);
+    }
+
+    if (stats == undefined) {
+        console.log('****** Exist');
+        writeDataFromFile('./404.html', res);
+        /*
+        res.writeHead(404, {
+            "Content-Type": "text/html"
+        });
+        //  console.log(data);
+        //res.write(data);
+
+        res.end();
+        */
+    } else {
+
+        console.log('***** PUT Exist');
+        writeDataToFile(putData);
+        // writeElementData(res, postData);
+
+        res.writeHead(200, {
+            "Content-Type": "application/json"
+        });
+        res.write('{"success":true}');
+        res.end();
+
+        console.log('%%%%%% Write Index %%%%%%%%%%%%%');
+        //writeDataToIndexFile();
+    }
+
+}
+
+function fileExistDelete(err, stats, res, url) {
+    console.log('@@@@@@@@@@@@@@@In Call Back*******************************');
+
+    if (err) {
+        console.log(err);
+    }
+
+    if (stats == undefined) {
+        console.log('****** Doesnt Exist');
+        res.writeHead(500, {
+            "Content-Type": "application/json"
+        });
+        res.write('{"error":"resource /' + url + ' does not exist"}');
+        res.end();
+    } else {
+
+        console.log('***** DELETE file Exist ' + '.' + url + '.html');
+        console.log(stats);
+
+        fs.unlink('.' + url + '.html', function() {
+            res.writeHead(200, {
+                "Content-Type": "application/json"
+            });
+            res.write('{"success":true}');
+            res.end();
+        })
+
+
+
+        console.log('%%%%%% Deleteing File Index %%%%%%%%%%%%%');
+        //writeDataToIndexFile();
     }
 
 }
