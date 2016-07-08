@@ -5,6 +5,7 @@ var querystring = require('querystring');
 const serverPort = 8080;
 const serverIP = '127.0.0.1';
 
+/*
 var testRegEx = "/";
 var testWhereRegEx = testRegEx.search(/^\/$/i);
 console.log('Found At ' + testWhereRegEx);
@@ -18,7 +19,7 @@ fs.stat(checkThisFile, function(err, stats) {
     console.log(stats);
     console.log(checkThisFile + " exists1");
 })
-
+*/
 
 getAllFilesFromFolder('.');
 
@@ -299,12 +300,14 @@ function fileExistDelete(err, stats, res, url) {
             });
             res.write('{"success":true}');
             res.end();
+
+            writeDataToIndexFile();
         })
 
 
 
         console.log('%%%%%% Deleteing File Index %%%%%%%%%%%%%');
-        //writeDataToIndexFile();
+        
     }
 
 }
@@ -441,15 +444,6 @@ function createIndexData(files) {
         data += '\n' + '<a href=" ' + files[i].replace('.', '') + ' ">' + files[i].replace('.html', '').replace('./', '') + '</a>';
         data += '\n' + '</li>';
     }
-
-    /*
-    data += '\n' + '<li>';
-    data += '\n' + '<a href=" / hydrogen.html ">Hydrogen</a>';
-    data += '\n' + '</li>';
-    data += '\n' + '<li>';
-    data += '\n' + '<a href=" / helium.html ">Helium</a>';
-    data += '\n' + '</li>';
-    */
 
     data += '\n' + '</ol>';
     data += '\n' + '</body>';
